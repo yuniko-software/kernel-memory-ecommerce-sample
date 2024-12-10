@@ -1,0 +1,24 @@
+services:
+  kernelmemory.ecommerce.sample.api:
+    image: ${DOCKER_REGISTRY-}kernelmemoryecommercesampleapi
+    build:
+      context: .
+      dockerfile: src/KernelMemory.Ecommerce.Sample.Api/Dockerfile
+    ports:
+      - 9000:8080
+      - 9001:8081
+
+  kernelmemory.ecommerce.sample.database:
+    image: pgvector/pgvector:pg17
+    container_name: KernelMemory.Ecommerce.Sample.Database
+    environment:
+      - POSTGRES_DB=kernelmemory
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
