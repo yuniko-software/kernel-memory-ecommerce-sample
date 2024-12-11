@@ -1,3 +1,4 @@
+using KernelMemory.Ecommerce.Sample.Api.Extensions;
 using Microsoft.KernelMemory;
 
 internal sealed class Program
@@ -9,6 +10,8 @@ internal sealed class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
+        builder.Services.AddApplicationServices();
+
         var app = BuildAsynchronousKernelMemoryApp(builder);
 
         if (app.Environment.IsDevelopment())
@@ -18,6 +21,8 @@ internal sealed class Program
         }
 
         app.UseHttpsRedirection();
+
+        app.MapEndpoints();
 
         await app.RunAsync();
     }
