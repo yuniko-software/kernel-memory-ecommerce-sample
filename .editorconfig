@@ -75,6 +75,9 @@ dotnet_diagnostic.IDE0008.severity = none
 # CA1303: Do not pass literals as localized parameters
 dotnet_diagnostic.CA1303.severity = silent
 
+# IDE0053: Use expression body for lambda expression
+dotnet_diagnostic.IDE0053.severity = silent
+
 [*.{cs,vb}]
 dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
 dotnet_style_prefer_simplified_interpolation = true:suggestion
@@ -100,7 +103,7 @@ csharp_style_var_when_type_is_apparent = true:none
 csharp_style_expression_bodied_accessors = true:error
 csharp_style_expression_bodied_constructors = false:silent
 csharp_style_expression_bodied_indexers = true:error
-csharp_style_expression_bodied_lambdas = true:error
+csharp_style_expression_bodied_lambdas = true:silent
 csharp_style_expression_bodied_local_functions = true:error
 csharp_style_expression_bodied_methods = false:silent
 csharp_style_expression_bodied_operators = true:error

@@ -12,7 +12,9 @@ public sealed class ImportProducts : IEndpoint
         {
             if (file == null || file.Length == 0)
             {
-                return Results.BadRequest("File is missing or empty");
+                return ApiResults.Problem(
+                    "Endpoints.ImportProducts.Failed",
+                    "File is missing or empty");
             }
 
             using var stream = file.OpenReadStream();
@@ -21,7 +23,7 @@ public sealed class ImportProducts : IEndpoint
 
             if (!result.IsSuccess)
             {
-                return Results.BadRequest();
+                return ApiResults.Problem(result.Error.Code, result.Error.Description);
             }
 
             return Results.NoContent();
