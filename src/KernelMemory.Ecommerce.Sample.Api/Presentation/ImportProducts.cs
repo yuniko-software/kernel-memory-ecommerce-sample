@@ -1,10 +1,10 @@
-﻿using KernelMemory.Ecommerce.Sample.Api.Application.ImportProducts;
+﻿using KernelMemory.Ecommerce.Sample.Api.Application;
 using KernelMemory.Ecommerce.Sample.Api.Domain;
 using MediatR;
 
 namespace KernelMemory.Ecommerce.Sample.Api.Presentation;
 
-internal sealed class ImportProducts : IEndpoint
+public sealed class ImportProducts : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
@@ -25,6 +25,7 @@ internal sealed class ImportProducts : IEndpoint
             }
 
             return Results.NoContent();
-        });
+        })
+        .DisableAntiforgery();
     }
 }

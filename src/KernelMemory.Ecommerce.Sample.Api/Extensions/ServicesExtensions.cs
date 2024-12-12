@@ -1,4 +1,7 @@
-﻿namespace KernelMemory.Ecommerce.Sample.Api.Extensions;
+﻿using KernelMemory.Ecommerce.Sample.Api.Application;
+using KernelMemory.Ecommerce.Sample.Api.Infrastructure;
+
+namespace KernelMemory.Ecommerce.Sample.Api.Extensions;
 
 public static class ServicesExtensions
 {
@@ -9,6 +12,8 @@ public static class ServicesExtensions
         services.AddEndpoints(assemblies);
 
         services.AddMediatR(config => config.RegisterServicesFromAssemblies(assemblies));
+
+        services.AddSingleton(typeof(ICsvReader<ProductCsvModel>), typeof(CsvReader<ProductCsvModel>));
 
         return services;
     }
