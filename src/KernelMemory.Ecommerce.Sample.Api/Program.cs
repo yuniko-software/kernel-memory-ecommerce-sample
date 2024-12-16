@@ -1,4 +1,5 @@
 using KernelMemory.Ecommerce.Sample.Api.Extensions;
+using KernelMemory.Ecommerce.Sample.Api.Infrastructure;
 using Microsoft.KernelMemory;
 
 internal sealed class Program
@@ -39,6 +40,8 @@ internal sealed class Program
         {
             kmb.WithOpenAI(openAiConfig);
             kmb.WithPostgresMemoryDb(postgresConfig);
+
+            kmb.WithContentDecoder<ProductsCsvDecoder>();
         });
 
         return appBuilder.Build();

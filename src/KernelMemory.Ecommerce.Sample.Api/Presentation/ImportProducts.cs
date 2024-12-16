@@ -17,9 +17,10 @@ public sealed class ImportProducts : IEndpoint
                     "File is missing or empty");
             }
 
+            string fileName = file.FileName;
             using var stream = file.OpenReadStream();
 
-            Result result = await sender.Send(new ImportProductsCommand(stream));
+            Result result = await sender.Send(new ImportProductsCommand(fileName, stream));
 
             if (!result.IsSuccess)
             {
