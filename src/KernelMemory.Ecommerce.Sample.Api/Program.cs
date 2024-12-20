@@ -36,12 +36,16 @@ internal sealed class Program
         var postgresConfig = new PostgresConfig();
         appBuilder.Configuration.BindSection("KernelMemory:Services:Postgres", postgresConfig);
 
+        var searchClientConfig = new SearchClientConfig();
+        appBuilder.Configuration.BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
+
         appBuilder.AddKernelMemory(kmb =>
         {
             kmb.WithOpenAI(openAiConfig);
             kmb.WithPostgresMemoryDb(postgresConfig);
+            kmb.WithSearchClientConfig(searchClientConfig);
 
-            kmb.WithContentDecoder<ProductsCsvDecoder>();
+            kmb.WithCustomPromptProvider<ProductSearchPromptProvider>();
         });
 
         return appBuilder.Build();
