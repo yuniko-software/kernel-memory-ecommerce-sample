@@ -1,5 +1,7 @@
-using KernelMemory.Ecommerce.Sample.Api.Extensions;
+using KernelMemory.Ecommerce.Sample.Api;
+using KernelMemory.Ecommerce.Sample.Api.Application.Configuration;
 using KernelMemory.Ecommerce.Sample.Api.Infrastructure;
+using KernelMemory.Ecommerce.Sample.Api.Presentation;
 using Microsoft.KernelMemory;
 
 internal sealed class Program
@@ -39,13 +41,18 @@ internal sealed class Program
         var searchClientConfig = new SearchClientConfig();
         appBuilder.Configuration.BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
 
+        var productSearchOptions = appBuilder.Configuration
+            .GetRequiredSection(ProductSearchOptions.ConfigurationKey)
+            .Get<ProductSearchOptions>()
+            ?? throw new InvalidProgramException(ProductSearchOptions.ConfigurationKey);
+
         appBuilder.AddKernelMemory(kmb =>
         {
             kmb.WithOpenAI(openAiConfig);
             kmb.WithPostgresMemoryDb(postgresConfig);
             kmb.WithSearchClientConfig(searchClientConfig);
 
-            kmb.WithCustomPromptProvider<ProductSearchPromptProvider>();
+            kmb.WithCustomPromptProvider(new ProductSearchPromptProvider(productSearchOptions.SearchResultsLimit));
         });
 
         return appBuilder.Build();

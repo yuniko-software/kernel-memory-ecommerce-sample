@@ -7,5 +7,4 @@ public sealed record Product(
     decimal Price,
     string PriceCurrency,
     int SupplyAbility,
-    int MinimumOrder
-);
+    int MinimumOrder);
