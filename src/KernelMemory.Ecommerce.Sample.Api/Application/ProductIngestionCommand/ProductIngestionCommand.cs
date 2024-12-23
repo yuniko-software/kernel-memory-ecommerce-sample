@@ -7,7 +7,7 @@ namespace KernelMemory.Ecommerce.Sample.Api.Application.ProductIngestionCommand;
 
 public sealed record ProductIngestionCommand(Stream ProductsFileStream) : ICommand;
 
-public sealed class IngestProductsCommandHandler(
+public sealed class ProductIngestionCommandHandler(
     ICsvReader<Product> csvReader, IKernelMemory memory) : ICommandHandler<ProductIngestionCommand>
 {
     public async Task<Result> Handle(ProductIngestionCommand request, CancellationToken cancellationToken)
