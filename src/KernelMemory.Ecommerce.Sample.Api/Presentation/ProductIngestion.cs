@@ -1,26 +1,25 @@
-﻿using KernelMemory.Ecommerce.Sample.Api.Application;
+﻿using KernelMemory.Ecommerce.Sample.Api.Application.ProductIngestionCommand;
 using KernelMemory.Ecommerce.Sample.Api.Domain;
 using MediatR;
 
 namespace KernelMemory.Ecommerce.Sample.Api.Presentation;
 
-public sealed class ImportProducts : IEndpoint
+public sealed class ProductIngestion : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("products/import", async (IFormFile file, ISender sender) =>
+        app.MapPost("api/products/ingestion", async (IFormFile file, ISender sender) =>
         {
             if (file == null || file.Length == 0)
             {
                 return ApiResults.Problem(
-                    "Endpoints.ImportProducts.Failed",
+                    "Endpoints.ProductsIngestion.Failed",
                     "File is missing or empty");
             }
 
-            string fileName = file.FileName;
             using var stream = file.OpenReadStream();
 
-            Result result = await sender.Send(new ImportProductsCommand(fileName, stream));
+            Result result = await sender.Send(new ProductIngestionCommand(stream));
 
             if (!result.IsSuccess)
             {

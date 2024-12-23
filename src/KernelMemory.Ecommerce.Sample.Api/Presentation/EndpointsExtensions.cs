@@ -1,8 +1,7 @@
 ﻿using System.Reflection;
-using KernelMemory.Ecommerce.Sample.Api.Presentation;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace KernelMemory.Ecommerce.Sample.Api.Extensions;
+namespace KernelMemory.Ecommerce.Sample.Api.Presentation;
 
 public static class EndpointsExtensions
 {
