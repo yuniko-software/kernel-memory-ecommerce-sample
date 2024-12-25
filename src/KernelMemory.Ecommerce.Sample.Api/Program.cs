@@ -1,7 +1,9 @@
 using KernelMemory.Ecommerce.Sample.Api.Application.Configuration;
 using KernelMemory.Ecommerce.Sample.Api.Infrastructure;
 using KernelMemory.Ecommerce.Sample.Api.Presentation;
+using KernelMemory.Ecommerce.Sample.Api.Infrastructure.Logging;
 using Microsoft.KernelMemory;
+using Serilog;
 
 namespace KernelMemory.Ecommerce.Sample.Api;
 
@@ -11,10 +13,15 @@ public sealed partial class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Host.UseSerilog((context, loggerConfig) => 
+            loggerConfig.ReadFrom.Configuration(context.Configuration));
+
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddApplicationServices();
+
+        builder.AddOpenTelemetry();
 
         var app = BuildAsynchronousKernelMemoryApp(builder);
 
@@ -28,6 +35,8 @@ public sealed partial class Program
         }
 
         app.UseHttpsRedirection();
+
+        app.UseSerilogRequestLogging();
 
         app.MapEndpoints();
 
