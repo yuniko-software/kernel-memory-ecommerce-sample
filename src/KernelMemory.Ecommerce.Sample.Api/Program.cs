@@ -35,8 +35,12 @@ internal sealed class Program
         var openAiConfig = new OpenAIConfig();
         appBuilder.Configuration.BindSection("KernelMemory:Services:OpenAI", openAiConfig);
 
-        var postgresConfig = new PostgresConfig();
-        appBuilder.Configuration.BindSection("KernelMemory:Services:Postgres", postgresConfig);
+        var qdrantConfig = new QdrantConfig();
+        appBuilder.Configuration.BindSection("KernelMemory:Services:Qdrant", qdrantConfig);
+
+        // Uncomment and configure this section if you want to use Postgres as the memory database
+        //var postgresConfig = new PostgresConfig();
+        //appBuilder.Configuration.BindSection("KernelMemory:Services:Postgres", postgresConfig);
 
         var searchClientConfig = new SearchClientConfig();
         appBuilder.Configuration.BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
@@ -49,7 +53,9 @@ internal sealed class Program
         appBuilder.AddKernelMemory(kmb =>
         {
             kmb.WithOpenAI(openAiConfig);
-            kmb.WithPostgresMemoryDb(postgresConfig);
+            kmb.WithQdrantMemoryDb(qdrantConfig);
+            // Uncomment the following line to enable Postgres as a memory database.
+            //kmb.WithPostgresMemoryDb(postgresConfig);
             kmb.WithSearchClientConfig(searchClientConfig);
 
             kmb.WithCustomPromptProvider(new ProductSearchPromptProvider(productSearchOptions.SearchResultsLimit));
