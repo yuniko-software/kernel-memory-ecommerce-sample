@@ -22,6 +22,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dataset", "dataset", "{F2A8
 		utils\dataset\products.csv = utils\dataset\products.csv
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlScripts", "SqlScripts", "{2DCA5E39-FA26-4EF0-8080-90564385C75E}"
+	ProjectSection(SolutionItems) = preProject
+		utils\SqlScripts\Init_vector_extens_db.sql = utils\SqlScripts\Init_vector_extens_db.sql
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +48,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{B11F5340-0E11-4BA4-BB8F-6860B119DC74} = {718B8EE6-DC5A-454F-B3EE-EE4DF2C80991}
 		{F2A8DE8C-9A08-4081-969C-34BB73E44C35} = {DA1EB217-C3F2-46CD-877A-7B61D6AB9396}
+		{2DCA5E39-FA26-4EF0-8080-90564385C75E} = {DA1EB217-C3F2-46CD-877A-7B61D6AB9396}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {550177A3-CC60-4E46-B746-8169B7C2E262}
