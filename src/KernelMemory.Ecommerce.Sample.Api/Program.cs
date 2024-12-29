@@ -1,10 +1,11 @@
-using KernelMemory.Ecommerce.Sample.Api;
 using KernelMemory.Ecommerce.Sample.Api.Application.Configuration;
 using KernelMemory.Ecommerce.Sample.Api.Infrastructure;
 using KernelMemory.Ecommerce.Sample.Api.Presentation;
 using Microsoft.KernelMemory;
 
-internal sealed class Program
+namespace KernelMemory.Ecommerce.Sample.Api;
+
+public sealed partial class Program
 {
     private static async Task Main(string[] args)
     {

@@ -19,14 +19,14 @@ public sealed class ProductIngestion : IEndpoint
 
             using var stream = file.OpenReadStream();
 
-            Result result = await sender.Send(new ProductIngestionCommand(stream));
+            Result<IReadOnlyCollection<string>> result = await sender.Send(new ProductIngestionCommand(stream));
 
             if (!result.IsSuccess)
             {
                 return ApiResults.Problem(result.Error.Code, result.Error.Description);
             }
 
-            return Results.NoContent();
+            return Results.Ok(result.Value);
         })
         .DisableAntiforgery();
     }
