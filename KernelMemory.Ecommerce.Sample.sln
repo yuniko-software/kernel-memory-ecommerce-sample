@@ -22,9 +22,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dataset", "dataset", "{F2A8
 		utils\dataset\products.csv = utils\dataset\products.csv
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlScripts", "SqlScripts", "{2DCA5E39-FA26-4EF0-8080-90564385C75E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sql-scripts", "sql-scripts", "{2DCA5E39-FA26-4EF0-8080-90564385C75E}"
 	ProjectSection(SolutionItems) = preProject
-		utils\SqlScripts\Init_vector_extens_db.sql = utils\SqlScripts\Init_vector_extens_db.sql
+		utils\SqlScripts\init.sql = utils\SqlScripts\init.sql
 	EndProjectSection
 EndProject
 Global
