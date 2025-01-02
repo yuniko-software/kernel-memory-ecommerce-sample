@@ -38,7 +38,7 @@ internal sealed class Program
         var qdrantConfig = new QdrantConfig();
         appBuilder.Configuration.BindSection("KernelMemory:Services:Qdrant", qdrantConfig);
 
-       // Uncomment and configure this section if you want to use Postgres as the memory database
+        // Uncomment and configure this section if you want to use Postgres as the memory database
         //var postgresConfig = new PostgresConfig();
         //appBuilder.Configuration.BindSection("KernelMemory:Services:Postgres", postgresConfig);
 
