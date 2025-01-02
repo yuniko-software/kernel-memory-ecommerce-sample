@@ -20,18 +20,15 @@ public sealed class ProductIngestionCommandHandler(
 
         // Note: The GenerateEmbeddingsParallelHandler could potentially be used here as an alternative.
         // However, it is currently experimental and may not yet be stable for production use
-        var documentIds = new List<string>();
         var importTasks = readingResult.Value.Select(async product =>
         {
-            var documentId = await memory.ImportTextAsync(
+            return await memory.ImportTextAsync(
                 JsonSerializer.Serialize(product),
                 documentId: product.Id.ToString(),
                 cancellationToken: cancellationToken);
-
-            documentIds.Add(documentId);
         });
 
-        await Task.WhenAll(importTasks);
+        var documentIds = await Task.WhenAll(importTasks);
 
         return documentIds;
     }
