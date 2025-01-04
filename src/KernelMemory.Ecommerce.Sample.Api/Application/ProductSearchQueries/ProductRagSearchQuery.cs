@@ -10,7 +10,8 @@ public sealed record ProductRagSearchQuery(string SearchQuery) : IQuery<ProductS
 
 public sealed class ProductRagSearchQueryHandler
     (IKernelMemory memory,
-    IOptions<ProductSearchOptions> options) : IQueryHandler<ProductRagSearchQuery, ProductSearchResponse>
+    IOptions<ProductSearchOptions> options,
+    ILogger<ProductRagSearchQueryHandler> logger) : IQueryHandler<ProductRagSearchQuery, ProductSearchResponse>
 {
     public async Task<Result<ProductSearchResponse>> Handle(
         ProductRagSearchQuery request,
@@ -23,14 +24,20 @@ public sealed class ProductRagSearchQueryHandler
 
         if (memoryAnswer.NoResult == true)
         {
-            return new ProductSearchResponse(
-                memoryAnswer.NoResult,
-                options.Value.MinSearchResultsRelevance,
-                memoryAnswer.RelevantSources.Count,
-                []);
+            return ProductSearchResponse.NoProducts(options.Value.MinSearchResultsRelevance);
         }
 
-        var foundProducts = JsonSerializer.Deserialize<List<Product>>(memoryAnswer.Result) ?? [];
+        List<Product> foundProducts;
+        try
+        {
+            foundProducts = JsonSerializer.Deserialize<List<Product>>(memoryAnswer.Result) ?? [];
+        }
+        catch (JsonException ex)
+        {
+            logger.LogError(ex, "Failed to deserialize memoryAnswer.Result for query '{Query}'", request.SearchQuery);
+
+            return ProductSearchResponse.NoProducts(options.Value.MinSearchResultsRelevance);
+        }
 
         return new ProductSearchResponse(
                 memoryAnswer.NoResult,

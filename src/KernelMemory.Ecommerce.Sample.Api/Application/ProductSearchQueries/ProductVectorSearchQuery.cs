@@ -24,11 +24,7 @@ public sealed class ProductVectorSearchQueryHandler(
 
         if (memoryAnswer.NoResult == true)
         {
-            return new ProductSearchResponse(
-                memoryAnswer.NoResult,
-                options.Value.MinSearchResultsRelevance,
-                memoryAnswer.Results.Count,
-                []);
+            return ProductSearchResponse.NoProducts(options.Value.MinSearchResultsRelevance);
         }
 
         var foundProducts = memoryAnswer.Results
