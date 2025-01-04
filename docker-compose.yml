@@ -7,6 +7,9 @@ services:
     ports:
       - 9000:8080
       - 9001:8081
+    depends_on:
+      kernelmemory.ecommerce.sample.database:
+        condition: service_healthy
 
   kernelmemory.ecommerce.sample.database:
     image: pgvector/pgvector:pg17
@@ -19,6 +22,12 @@ services:
       - "5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
+      - ./utils/sql-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   kernelmemory.ecommerce.sample.qdrant:
     image: qdrant/qdrant
