@@ -6,22 +6,19 @@ using KernelMemory.Ecommerce.Sample.Api.Application.ProductSearchQueries;
 using KernelMemory.Ecommerce.Sample.Api.Domain;
 using KernelMemory.Ecommerce.Sample.FunctionalTests.Abstractions;
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.Context;
 using NSubstitute;
 
 namespace KernelMemory.Ecommerce.Sample.FunctionalTests;
 
-public class ProductRagSearchTests : IClassFixture<TestWebAppFactory>
+public class ProductVectorSearchTests : IClassFixture<TestWebAppFactory>
 {
-    private const string Endpoint = "api/products/search/rag";
+    private const string Endpoint = "api/products/search/vector";
 
     private readonly HttpClient _httpClient;
-    // Mocking AskStreamingAsync because AskAsync is an extension method that internally uses AskStreamingAsync.
-    // This allows us to intercept the behavior of AskAsync by setting up AskStreamingAsync instead
     private readonly IKernelMemory _mockKernelMemory;
     private readonly ProductSearchOptions _options;
 
-    public ProductRagSearchTests(TestWebAppFactory factory)
+    public ProductVectorSearchTests(TestWebAppFactory factory)
     {
         _httpClient = factory.CreateClient();
         _mockKernelMemory = factory.MockKernelMemory;
@@ -32,24 +29,21 @@ public class ProductRagSearchTests : IClassFixture<TestWebAppFactory>
     }
 
     [Fact]
-    public async Task ProductRagSearch_WithNoResultResponseFromKernel_ReturnsOkResultWithNoProducts()
+    public async Task ProductVectorSearch_WithNoResultResponseFromKernel_ReturnsOkResultWithNoProducts()
     {
         // Arrange
-        var userQuestion = "some weird question";
-        var url = Endpoint + $"?searchQuery={userQuestion.Replace(' ', '+')}";
+        var searchQuery = "some weird query";
+        var url = Endpoint + $"?searchQuery={searchQuery.Replace(' ', '+')}";
 
         var minRelevance = _options.MinSearchResultsRelevance;
-        var memoryResult = new[] { new MemoryAnswer() }.ToAsyncEnumerable();
+        var limit = _options.SearchResultsLimit;
+        var searchResult = new SearchResult();
 
-        _mockKernelMemory.AskStreamingAsync(
-            Arg.Is<string>(question => question == userQuestion),
-            Arg.Any<string?>(),
-            Arg.Any<MemoryFilter?>(),
-            Arg.Any<ICollection<MemoryFilter>?>(),
-            Arg.Is<double>(relevance => relevance == minRelevance),
-            Arg.Any<SearchOptions?>(),
-            Arg.Any<IContext?>(),
-            Arg.Any<CancellationToken>()).Returns(memoryResult);
+        _mockKernelMemory.SearchAsync(
+            Arg.Is<string>(query => query == searchQuery),
+            minRelevance: Arg.Is<double>(relevance => relevance == minRelevance),
+            limit: Arg.Is<int>(lim => lim == limit),
+            cancellationToken: Arg.Any<CancellationToken>()).Returns(searchResult);
 
         // Act
         var httpResponse = await _httpClient.GetAsync(url);
@@ -67,25 +61,24 @@ public class ProductRagSearchTests : IClassFixture<TestWebAppFactory>
     }
 
     [Fact]
-    public async Task ProductRagSearch_WithNonSerializableResponseFromKernel_ReturnsOkResultWithNoProducts()
+    public async Task ProductVectorSearch_WithNonSerializableResponseFromKernel_ReturnsOkResultWithNoProducts()
     {
         // Arrange
-        var userQuestion = "Give me gaming consoles";
-        var url = Endpoint + $"?searchQuery={userQuestion.Replace(' ', '+')}";
+        var searchQuery = "Give me gaming consoles";
+        var url = Endpoint + $"?searchQuery={searchQuery.Replace(' ', '+')}";
 
         var minRelevance = _options.MinSearchResultsRelevance;
-        var memoryAnswer = new MemoryAnswer() { NoResult = false, Result = "Xbox series X" };
-        var memoryAnswers = new[] { memoryAnswer }.ToAsyncEnumerable();
+        var limit = _options.SearchResultsLimit;
+        var searchResult = new SearchResult()
+        {
+            Results = [new Citation() { Partitions = [new Citation.Partition() { Text = "Xbox series X" }] }]
+        };
 
-        _mockKernelMemory.AskStreamingAsync(
-            Arg.Is<string>(question => question == userQuestion),
-            Arg.Any<string?>(),
-            Arg.Any<MemoryFilter?>(),
-            Arg.Any<ICollection<MemoryFilter>?>(),
-            Arg.Is<double>(relevance => relevance == minRelevance),
-            Arg.Any<SearchOptions?>(),
-            Arg.Any<IContext?>(),
-            Arg.Any<CancellationToken>()).Returns(memoryAnswers);
+        _mockKernelMemory.SearchAsync(
+            Arg.Is<string>(query => query == searchQuery),
+            minRelevance: Arg.Is<double>(relevance => relevance == minRelevance),
+            limit: Arg.Is<int>(lim => lim == limit),
+            cancellationToken: Arg.Any<CancellationToken>()).Returns(searchResult);
 
         // Act
         var httpResponse = await _httpClient.GetAsync(url);
@@ -106,28 +99,23 @@ public class ProductRagSearchTests : IClassFixture<TestWebAppFactory>
     public async Task ProductRagSearch_WithCorrectResponseFromKernel_ReturnsOkResultWithProducts()
     {
         // Arrange
-        var userQuestion = "Give me gaming consoles";
-        var url = Endpoint + $"?searchQuery={userQuestion.Replace(' ', '+')}";
+        var searchQuery = "Give me gaming consoles";
+        var url = Endpoint + $"?searchQuery={searchQuery.Replace(' ', '+')}";
 
         var minRelevance = _options.MinSearchResultsRelevance;
+        var limit = _options.SearchResultsLimit;
         var product = new Product(Guid.NewGuid(), "Xbox Series X", "Gaming console", 500, "USD", 2, 1);
-        var productsToReturn = new List<Product>() { product };
-        var memoryAnswer = new MemoryAnswer()
+        var partitionToSearch = new Citation.Partition() { Text = JsonSerializer.Serialize(product) };
+        var searchResult = new SearchResult()
         {
-            NoResult = false,
-            Result = JsonSerializer.Serialize(productsToReturn)
+            Results = [new Citation() { Partitions = [partitionToSearch] }]
         };
-        var memoryAnswers = new[] { memoryAnswer }.ToAsyncEnumerable();
 
-        _mockKernelMemory.AskStreamingAsync(
-            Arg.Is<string>(question => question == userQuestion),
-            Arg.Any<string?>(),
-            Arg.Any<MemoryFilter?>(),
-            Arg.Any<ICollection<MemoryFilter>?>(),
-            Arg.Is<double>(relevance => relevance == minRelevance),
-            Arg.Any<SearchOptions?>(),
-            Arg.Any<IContext?>(),
-            Arg.Any<CancellationToken>()).Returns(memoryAnswers);
+        _mockKernelMemory.SearchAsync(
+            Arg.Is<string>(query => query == searchQuery),
+            minRelevance: Arg.Is<double>(relevance => relevance == minRelevance),
+            limit: Arg.Is<int>(lim => lim == limit),
+            cancellationToken: Arg.Any<CancellationToken>()).Returns(searchResult);
 
         // Act
         var httpResponse = await _httpClient.GetAsync(url);
