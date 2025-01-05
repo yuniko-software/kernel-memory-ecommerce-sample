@@ -10,36 +10,43 @@ public sealed record ProductVectorSearchQuery(string SearchQuery) : IQuery<Produ
 
 public sealed class ProductVectorSearchQueryHandler(
     IKernelMemory memory,
-    IOptions<ProductSearchOptions> options) : IQueryHandler<ProductVectorSearchQuery, ProductSearchResponse>
+    IOptions<ProductSearchOptions> options,
+    ILogger<ProductVectorSearchQueryHandler> logger) : IQueryHandler<ProductVectorSearchQuery, ProductSearchResponse>
 {
     public async Task<Result<ProductSearchResponse>> Handle(
         ProductVectorSearchQuery request,
         CancellationToken cancellationToken)
     {
-        var memoryAnswer = await memory.SearchAsync(
+        var searchResult = await memory.SearchAsync(
             request.SearchQuery,
             minRelevance: options.Value.MinSearchResultsRelevance,
             limit: options.Value.SearchResultsLimit,
             cancellationToken: cancellationToken);
 
-        if (memoryAnswer.NoResult == true)
+        if (searchResult.NoResult == true)
         {
-            return new ProductSearchResponse(
-                memoryAnswer.NoResult,
-                options.Value.MinSearchResultsRelevance,
-                memoryAnswer.Results.Count,
-                []);
+            return ProductSearchResponse.NoProducts(options.Value.MinSearchResultsRelevance);
         }
 
-        var foundProducts = memoryAnswer.Results
-            .SelectMany(res => res.Partitions)
-            .Select(part => JsonSerializer.Deserialize<Product>(part.Text)!)
-            .ToList();
+        List<Product> foundProducts;
+        try
+        {
+            foundProducts = searchResult.Results
+                .SelectMany(res => res.Partitions)
+                .Select(part => JsonSerializer.Deserialize<Product>(part.Text)!)
+                .ToList();
+        }
+        catch (JsonException ex)
+        {
+            logger.LogError(ex, "Failed to deserialize search result partition text for query '{Query}'", request.SearchQuery);
+
+            return ProductSearchResponse.NoProducts(options.Value.MinSearchResultsRelevance);
+        }
 
         return new ProductSearchResponse(
-            memoryAnswer.NoResult,
+            searchResult.NoResult,
             options.Value.MinSearchResultsRelevance,
-            memoryAnswer.Results.Count,
+            searchResult.Results.Count,
             foundProducts);
     }
 }
