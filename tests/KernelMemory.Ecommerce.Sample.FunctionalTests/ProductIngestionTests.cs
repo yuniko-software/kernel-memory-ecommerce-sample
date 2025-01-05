@@ -26,7 +26,7 @@ public class ProductIngestionTests : IClassFixture<TestWebAppFactory>
     }
 
     [Fact]
-    public async Task ProductIngestion_WithInvalidCsvFile_ReturnsBadRequest()
+    public async Task ProductIngestion_WithCsvFileHavingWrongFormat_ReturnsBadRequest()
     {
         // Arrange
         using var content = new MultipartFormDataContent();
