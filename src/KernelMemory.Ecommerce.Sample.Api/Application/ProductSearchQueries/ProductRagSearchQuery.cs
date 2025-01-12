@@ -8,8 +8,8 @@ namespace KernelMemory.Ecommerce.Sample.Api.Application.ProductSearchQueries;
 
 public sealed record ProductRagSearchQuery(string SearchQuery) : IQuery<ProductSearchResponse>;
 
-public sealed class ProductRagSearchQueryHandler
-    (IKernelMemory memory,
+public sealed class ProductRagSearchQueryHandler(
+    IKernelMemory memory,
     IOptions<ProductSearchOptions> options,
     ILogger<ProductRagSearchQueryHandler> logger) : IQueryHandler<ProductRagSearchQuery, ProductSearchResponse>
 {
