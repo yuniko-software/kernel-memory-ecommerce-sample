@@ -31,6 +31,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sql-scripts", "sql-scripts"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelMemory.Ecommerce.Sample.FunctionalTests", "tests\KernelMemory.Ecommerce.Sample.FunctionalTests\KernelMemory.Ecommerce.Sample.FunctionalTests.csproj", "{C68C2612-35CC-4166-BD41-E6849A7634D7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KernelMemory.Qdrant.EnhancedClient", "src\KernelMemory.Qdrant.EnhancedClient\KernelMemory.Qdrant.EnhancedClient.csproj", "{F65D6DB1-59F3-469C-AC00-B79D8BAFF668}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{C68C2612-35CC-4166-BD41-E6849A7634D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C68C2612-35CC-4166-BD41-E6849A7634D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C68C2612-35CC-4166-BD41-E6849A7634D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F65D6DB1-59F3-469C-AC00-B79D8BAFF668}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F65D6DB1-59F3-469C-AC00-B79D8BAFF668}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F65D6DB1-59F3-469C-AC00-B79D8BAFF668}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F65D6DB1-59F3-469C-AC00-B79D8BAFF668}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -58,6 +64,7 @@ Global
 		{F2A8DE8C-9A08-4081-969C-34BB73E44C35} = {DA1EB217-C3F2-46CD-877A-7B61D6AB9396}
 		{AF0169DB-34A2-40FF-AE25-D6FB14AE9782} = {DA1EB217-C3F2-46CD-877A-7B61D6AB9396}
 		{C68C2612-35CC-4166-BD41-E6849A7634D7} = {FCF19434-77D2-4652-8A3C-624F7E88FB8B}
+		{F65D6DB1-59F3-469C-AC00-B79D8BAFF668} = {718B8EE6-DC5A-454F-B3EE-EE4DF2C80991}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {550177A3-CC60-4E46-B746-8169B7C2E262}

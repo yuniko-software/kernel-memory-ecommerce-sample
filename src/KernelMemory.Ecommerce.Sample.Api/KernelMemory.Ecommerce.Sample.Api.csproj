@@ -19,4 +19,8 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\KernelMemory.Qdrant.EnhancedClient\KernelMemory.Qdrant.EnhancedClient.csproj" />
+  </ItemGroup>
+
 </Project>

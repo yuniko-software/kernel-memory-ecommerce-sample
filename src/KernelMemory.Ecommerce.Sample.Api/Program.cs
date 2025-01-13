@@ -1,6 +1,7 @@
 using KernelMemory.Ecommerce.Sample.Api.Application.Configuration;
 using KernelMemory.Ecommerce.Sample.Api.Infrastructure;
 using KernelMemory.Ecommerce.Sample.Api.Presentation;
+using KernelMemory.Qdrant.EnhancedClient;
 using Microsoft.KernelMemory;
 
 namespace KernelMemory.Ecommerce.Sample.Api;
@@ -54,9 +55,10 @@ public sealed partial class Program
         appBuilder.AddKernelMemory(kmb =>
         {
             kmb.WithOpenAI(openAiConfig);
-            kmb.WithQdrantMemoryDb(qdrantConfig);
+            //kmb.WithQdrantMemoryDb(qdrantConfig);
             // Uncomment the following line to enable Postgres as a memory database.
             //kmb.WithPostgresMemoryDb(postgresConfig);
+            kmb.WithEnhancedQdrantClient();
             kmb.WithSearchClientConfig(searchClientConfig);
 
             kmb.WithCustomPromptProvider(new ProductSearchPromptProvider(productSearchOptions.SearchResultsLimit));
