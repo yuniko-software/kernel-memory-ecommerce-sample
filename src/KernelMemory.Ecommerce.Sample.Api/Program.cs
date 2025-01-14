@@ -18,6 +18,9 @@ public sealed partial class Program
 
         var app = BuildAsynchronousKernelMemoryApp(builder);
 
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
+
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();

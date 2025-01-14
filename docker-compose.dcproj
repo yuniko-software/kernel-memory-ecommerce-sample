@@ -6,7 +6,7 @@
     <DockerPublishLocally>False</DockerPublishLocally>
     <ProjectGuid>d960728f-422a-474b-bc67-22d1e4e27769</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
-    <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/swagger</DockerServiceUrl>
+    <DockerServiceUrl>{Scheme}://localhost:{ServicePort}</DockerServiceUrl>
     <DockerServiceName>kernelmemory.ecommerce.sample.api</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
