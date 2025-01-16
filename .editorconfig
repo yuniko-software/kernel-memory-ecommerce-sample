@@ -391,9 +391,6 @@ dotnet_diagnostic.S4136.severity = none
 # S6605: Collection-specific "Exists" method should be used instead of the "Any" extension
 dotnet_diagnostic.S6605.severity = none
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
-tab_width = 4
-indent_size = 4
-end_of_line = crlf
 dotnet_style_null_propagation = true:error
 dotnet_style_coalesce_expression = true:error
 dotnet_style_prefer_is_null_check_over_reference_equality_method = true:error
@@ -412,3 +409,6 @@ dotnet_style_qualification_for_property = false:error
 dotnet_style_qualification_for_method = false:error
 dotnet_style_qualification_for_event = false:error
 dotnet_style_predefined_type_for_locals_parameters_members = true:error
+tab_width = 4
+indent_size = 4
+end_of_line = lf
