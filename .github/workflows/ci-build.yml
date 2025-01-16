@@ -24,6 +24,9 @@ jobs:
       
     - name: Build
       run: dotnet build --no-restore KernelMemory.Ecommerce.Sample.sln
+
+    - name: Check fomatting
+      run: dotnet format --verify-no-changes KernelMemory.Ecommerce.Sample.sln
       
     - name: Test
       run: dotnet test --no-build --verbosity normal KernelMemory.Ecommerce.Sample.sln
