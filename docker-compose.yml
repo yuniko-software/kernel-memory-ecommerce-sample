@@ -42,6 +42,18 @@ services:
     volumes:
       - qdrant-data:/var/lib/qdrant/storage
 
+  
+  kernelmemory.ecommerce.sample.seq:
+    image: datalust/seq
+    ports: 
+      - 5341:80
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINPASSWORD=password
+    volumes:
+      - seq-data:/data
+
 volumes:
   db-data:
   qdrant-data:
+  seq-data:
