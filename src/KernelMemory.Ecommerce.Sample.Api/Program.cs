@@ -1,7 +1,7 @@
 using KernelMemory.Ecommerce.Sample.Api.Application.Configuration;
 using KernelMemory.Ecommerce.Sample.Api.Infrastructure;
-using KernelMemory.Ecommerce.Sample.Api.Presentation;
 using KernelMemory.Ecommerce.Sample.Api.Infrastructure.Logging;
+using KernelMemory.Ecommerce.Sample.Api.Presentation;
 using Microsoft.KernelMemory;
 using Serilog;
 
@@ -13,7 +13,7 @@ public sealed partial class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Host.UseSerilog((context, loggerConfig) => 
+        builder.Host.UseSerilog((context, loggerConfig) =>
             loggerConfig.ReadFrom.Configuration(context.Configuration));
 
         builder.Services.AddEndpointsApiExplorer();
