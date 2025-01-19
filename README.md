@@ -2,7 +2,6 @@
 
 
 ![Build](https://github.com/demid-ns/kernel-memory-ecommerce-sample/actions/workflows/ci-build.yml/badge.svg)
-[![GitHub stars](https://img.shields.io/github/stars/demid-ns/kernel-memory-ecommerce-sample?style=social)](https://github.com/demid-ns/kernel-memory-ecommerce-sample/stargazers)  
 
 Support the project by giving it a star! Your feedback and contributions are greatly appreciated.
 
