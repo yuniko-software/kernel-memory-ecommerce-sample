@@ -48,7 +48,7 @@ This sample uses **OpenAI's `gpt-4o-mini`** as the language model and **`text-em
 
 - [http://localhost:9000](http://localhost:9000) - Application UI
 - [http://localhost:9000/swagger](http://localhost:9000/swagger) - Swagger API Documentation
-- [http://localhost:5341](http://localhost:5341) - Seq (observability, structured logs, traces). Default login: **`admin`**; Default password: **`password`**
+- [http://localhost:5341](http://localhost:5341) - Seq (structured logs, traces). Default login: `admin` Default password: `password`
 - [http://localhost:6333/dashboard](http://localhost:6333/dashboard) - Qdrant Dashboard
 
 ## Contribution
