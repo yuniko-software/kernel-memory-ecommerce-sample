@@ -1,6 +1,12 @@
 ## Kernel Memory: E-commerce Sample
 
+
 ![Build](https://github.com/demid-ns/kernel-memory-ecommerce-sample/actions/workflows/ci-build.yml/badge.svg)
+[![GitHub stars](https://img.shields.io/github/stars/demid-ns/kernel-memory-ecommerce-sample?style=social)](https://github.com/demid-ns/kernel-memory-ecommerce-sample/stargazers)  
+
+Support the project by giving it a star! Your feedback and contributions are greatly appreciated.
+
+## Introduction
 
 This repository contains a sample .NET project demonstrating the use of [Kernel Memory](https://github.com/microsoft/kernel-memory) for semantic search and Retrieval-Augmented Generation (RAG) on a small commercial products dataset. 
 It mimics an **e-shop** environment where users can search for products, and the application retrieves the most relevant results.
@@ -38,4 +44,17 @@ This sample uses **OpenAI's `gpt-4o-mini`** as the language model and **`text-em
    
    After the application is running, open your browser and navigate to [http://localhost:9000](http://localhost:9000).
    From there, you can ingest the sample dataset located at `/utils/dataset/products.csv` ([link](./utils/dataset/products.csv))
+
+## Accessing the Application
+
+- [http://localhost:9000](http://localhost:9000) - Application UI
+- [http://localhost:9000/swagger](http://localhost:9000/swagger) - Swagger API Documentation
+- [http://localhost:5341](http://localhost:5341) - Seq (observability, structured logs, traces)
+- [http://localhost:6333/dashboard](http://localhost:6333/dashboard) - Qdrant Dashboard
+
+## Contribution
+
+Feel free to open discussions, submit pull requests, or share suggestions to help improve the project! The authors are very friendly and open to feedback and contributions.
+
+
    
