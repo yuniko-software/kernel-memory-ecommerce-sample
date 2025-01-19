@@ -6,7 +6,6 @@ services:
       dockerfile: src/KernelMemory.Ecommerce.Sample.Api/Dockerfile
     ports:
       - 9000:8080
-      - 9001:8081
     depends_on:
       kernelmemory.ecommerce.sample.database:
         condition: service_healthy

@@ -3,12 +3,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - ASPNETCORE_HTTPS_PORTS=8081
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://kernelmemory.ecommerce.sample.seq:5341/ingest/otlp/v1/traces
       - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-    ports:
-      - "8080"
-      - "8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
