@@ -148,6 +148,18 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
+		.json-output {
+			background-color: #f9f9f9;
+			border: 1px solid #ddd;
+			padding: 10px;
+			font-family: monospace;
+			white-space: pre-wrap;
+			max-height: 300px;
+            max-width: 100%;
+			overflow-y: auto;
+			margin-top: 20px;
+		}
+
         .user-hints h3 {
             margin-top: 0;
             color: #00d1b2;
@@ -242,6 +254,29 @@
         <div id="ragSearchResult" class="mt-4"></div>
     </section>
 
+    <!-- RAG Streaming Search Section -->
+    <section class="box" id="ragStreamingSearchSection">
+        <h2 class="subtitle">RAG Streaming Search</h2>
+        <div class="field">
+            <div class="control">
+                <input class="input" type="text" id="ragStreamingSearchQuery" placeholder="Enter search query">
+            </div>
+        </div>
+        <button id="ragStreamingSearchButton" class="button is-unified" onclick="ragStreamingSearch()">Search</button>
+
+        <!-- RAG Streaming Search Category Buttons -->
+        <div class="category-buttons">
+            <button class="button is-info" onclick="ragStreamingSearch('Gaming Console')">Gaming Console</button>
+            <button class="button is-info" onclick="ragStreamingSearch('Smartphone')">Smartphone</button>
+            <button class="button is-info" onclick="ragStreamingSearch('Laptop')">Laptop</button>
+            <button class="button is-info" onclick="ragStreamingSearch('Headphones')">Headphones</button>
+        </div>
+
+        <div id="ragStreamingJsonOutput" class="json-output"></div>
+        <div id="ragStreamingSearchResult" class="mt-4"></div>
+
+    </section>
+
     <script>
         function displayFileName() {
             const fileInput = document.getElementById('csvFile');
@@ -306,26 +341,26 @@
         function displaySuccess(result) {
             const resultContainer = document.getElementById('uploadResult');
             resultContainer.innerHTML = `
-                <div class="notification is-success">
-                    <button class="delete" onclick="closeNotification(this)"></button>
-                    <strong>File uploaded successfully. Returned IDs:</strong>
-                    <div class="id-list-container">
-                        <ul class="id-list">
-                            ${result.map(id => `<li>${id}</li>`).join('')}
-                        </ul>
-                    </div>
-                </div>
-            `;
+                            <div class="notification is-success">
+                                <button class="delete" onclick="closeNotification(this)"></button>
+                                <strong>File uploaded successfully. Returned IDs:</strong>
+                                <div class="id-list-container">
+                                    <ul class="id-list">
+                                        ${result.map(id => `<li>${id}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        `;
         }
 
         function displayError(message) {
             const resultContainer = document.getElementById('uploadResult');
             resultContainer.innerHTML = `
-                <div class="notification is-danger">
-                    <button class="delete" onclick="closeNotification(this)"></button>
-                    <strong>Error:</strong> ${message}
-                </div>
-            `;
+                            <div class="notification is-danger">
+                                <button class="delete" onclick="closeNotification(this)"></button>
+                                <strong>Error:</strong> ${message}
+                            </div>
+                        `;
         }
 
         function closeNotification(button) {
@@ -353,23 +388,23 @@
                     resultContainer.innerHTML = '<div class="notification is-danger"><strong>No results found</strong></div>';
                 } else {
                     resultContainer.innerHTML = `
-                        <div>
-                            <p><strong>Min Relevance:</strong> ${result.minRelevance}</p>
-                            <p><strong>Relevant Sources Count:</strong> ${result.relevantSourcesCount}</p>
-                            <p><strong>Request Duration:</strong> ${duration.toFixed(2)} seconds</p>
-                        </div>
-                        <div class="products-container">
-                            ${result.products.map(product => `
-                                <div class="product-card">
-                                    <h3>${product.name}</h3>
-                                    <p class="description">${product.description}</p>
-                                    <p class="price">${product.price} ${product.priceCurrency}</p>
-                                    <p>Supply Ability: ${product.supplyAbility}</p>
-                                    <p>Minimum Order: ${product.minimumOrder}</p>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
+                                    <div>
+                                        <p><strong>Min Relevance:</strong> ${result.minRelevance}</p>
+                                        <p><strong>Relevant Sources Count:</strong> ${result.relevantSourcesCount}</p>
+                                        <p><strong>Request Duration:</strong> ${duration.toFixed(2)} seconds</p>
+                                    </div>
+                                    <div class="products-container">
+                                        ${result.products.map(product => `
+                                            <div class="product-card">
+                                                <h3>${product.name}</h3>
+                                                <p class="description">${product.description}</p>
+                                                <p class="price">${product.price} ${product.priceCurrency}</p>
+                                                <p>Supply Ability: ${product.supplyAbility}</p>
+                                                <p>Minimum Order: ${product.minimumOrder}</p>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                `;
                 }
             } catch (error) {
                 resultContainer.innerHTML = '<div class="notification is-danger"><strong>Error occurred while searching.</strong></div>';
@@ -399,13 +434,111 @@
                     resultContainer.innerHTML = '<div class="notification is-danger"><strong>No results found</strong></div>';
                 } else {
                     resultContainer.innerHTML = `
+                                    <div>
+                                        <p><strong>Min Relevance:</strong> ${result.minRelevance}</p>
+                                        <p><strong>Relevant Sources Count:</strong> ${result.relevantSourcesCount}</p>
+                                        <p><strong>Request Duration:</strong> ${duration.toFixed(2)} seconds</p>
+                                    </div>
+                                    <div class="products-container">
+                                        ${result.products.map(product => `
+                                            <div class="product-card">
+                                                <h3>${product.name}</h3>
+                                                <p class="description">${product.description}</p>
+                                                <p class="price">${product.price} ${product.priceCurrency}</p>
+                                                <p>Supply Ability: ${product.supplyAbility}</p>
+                                                <p>Minimum Order: ${product.minimumOrder}</p>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                `;
+                }
+            } catch (error) {
+                resultContainer.innerHTML = '<div class="notification is-danger"><strong>Error occurred while searching.</strong></div>';
+            } finally {
+                ragSearchButton.classList.remove('is-loading');
+                unlockSectionButtons('ragSearchSection');
+            }
+        }
+
+		async function ragStreamingSearch(category) {
+			const query = category || document.getElementById('ragStreamingSearchQuery').value;
+			const ragStreamingSearchButton = document.getElementById('ragStreamingSearchButton');
+			const resultContainer = document.getElementById('ragStreamingSearchResult');
+            const jsonOutputContainer = document.getElementById('ragStreamingJsonOutput');
+
+			resultContainer.innerHTML = '';
+			jsonOutputContainer.textContent = '';
+
+			lockSectionButtons('ragStreamingSearchSection');
+			ragStreamingSearchButton.classList.add('is-loading');
+
+			const startTime = Date.now();
+			let jsonOutput = '';
+			let parsedResults = [];
+			let accumulatedData = '';
+
+			try {
+				const response = await fetch(`/api/products/search/rag/streaming?searchQuery=${encodeURIComponent(query)}`);
+				const reader = response.body.getReader();
+				const decoder = new TextDecoder("utf-8");
+
+				while (true) {
+					const { done, value } = await reader.read();
+					if (done) break;
+					const chunk = decoder.decode(value, { stream: true });
+					accumulatedData += chunk;
+					jsonOutput += chunk;
+					jsonOutputContainer.textContent = jsonOutput;
+
+					// Attempt to parse the JSON data
+					try {
+						// Check if the accumulated data ends with a valid JSON structure
+						const lastBraceIndex = accumulatedData.lastIndexOf('}');
+						const lastBracketIndex = accumulatedData.lastIndexOf(']');
+						const endIndex = Math.max(lastBraceIndex, lastBracketIndex);
+
+						if (endIndex !== -1) {
+							const jsonString = accumulatedData.substring(0, endIndex + 1);
+							const parsedChunk = JSON.parse(jsonString);
+							parsedResults.push(parsedChunk);
+							accumulatedData = accumulatedData.substring(endIndex + 1); // Remove the parsed part
+						}
+					} catch (e) {
+						// Ignore parsing errors
+						console.error('Error parsing chunk:', e);
+					}
+				}
+
+				const endTime = Date.now();
+				const duration = (endTime - startTime) / 1000; // Convert to seconds
+
+				if (parsedResults.length === 0) {
+					resultContainer.innerHTML = '<div class="notification is-danger"><strong>No results found</strong></div>';
+				} else {
+					const products = parsedResults[0];
+					const transformedResult = {
+                        noResult: false,
+						minRelevance: 0.8,
+						relevantSourcesCount: products.length,
+						products: products.map(product => ({
+							id: product.Id,
+							name: product.Name,
+							description: product.Description,
+							price: product.Price,
+							priceCurrency: product.PriceCurrency,
+							supplyAbility: product.SupplyAbility,
+							minimumOrder: product.MinimumOrder
+						}))
+					};
+
+					resultContainer.innerHTML = `
                         <div>
-                            <p><strong>Min Relevance:</strong> ${result.minRelevance}</p>
-                            <p><strong>Relevant Sources Count:</strong> ${result.relevantSourcesCount}</p>
+                        <p><strong>Min Relevance:</strong> ${transformedResult.minRelevance}</p>
+                            <p><strong>Relevant Sources Count:</strong> ${transformedResult.relevantSourcesCount}</p>
                             <p><strong>Request Duration:</strong> ${duration.toFixed(2)} seconds</p>
                         </div>
                         <div class="products-container">
-                            ${result.products.map(product => `
+                            ${transformedResult.products.map(product => `
                                 <div class="product-card">
                                     <h3>${product.name}</h3>
                                     <p class="description">${product.description}</p>
@@ -416,14 +549,16 @@
                             `).join('')}
                         </div>
                     `;
-                }
-            } catch (error) {
-                resultContainer.innerHTML = '<div class="notification is-danger"><strong>Error occurred while searching.</strong></div>';
-            } finally {
-                ragSearchButton.classList.remove('is-loading');
-                unlockSectionButtons('ragSearchSection');
-            }
-        }
+				}
+			} catch (error) {
+				console.error('Error occurred while searching:', error);
+				resultContainer.innerHTML = '<div class="notification is-danger"><strong>Error occurred while searching.</strong></div>';
+			} finally {
+				ragStreamingSearchButton.classList.remove('is-loading');
+				unlockSectionButtons('ragStreamingSearchSection');
+			}
+		}
+
     </script>
 </body>
 </html>
