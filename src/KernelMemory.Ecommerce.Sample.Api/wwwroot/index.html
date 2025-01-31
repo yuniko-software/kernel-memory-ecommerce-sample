@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -148,17 +149,17 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-		.json-output {
-			background-color: #f9f9f9;
-			border: 1px solid #ddd;
-			padding: 10px;
-			font-family: monospace;
-			white-space: pre-wrap;
-			max-height: 300px;
+        .json-output {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
             max-width: 100%;
-			overflow-y: auto;
-			margin-top: 20px;
-		}
+            overflow-y: auto;
+            margin-top: 20px;
+        }
 
         .user-hints h3 {
             margin-top: 0;
@@ -171,6 +172,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <header class="header">
@@ -182,8 +184,14 @@
         <h3>How to Use:</h3>
         <ul>
             <li>Upload a CSV file for product ingestion. After uploading, the product IDs will be displayed.</li>
-            <li>Use the Vector Search section to search for products by category or search query. Click the category buttons or enter a custom query.</li>
-            <li>Use RAG (Retrieval Augmented Generation Search) to get smarter, context-driven results by blending search data with generated insights.</li>
+            <li>
+                Use the Vector Search section to search for products by category or search query. Click the category
+                buttons or enter a custom query.
+            </li>
+            <li>
+                Use RAG (Retrieval Augmented Generation Search) to get smarter, context-driven results by blending
+                search data with generated insights.
+            </li>
         </ul>
     </section>
 
@@ -460,105 +468,100 @@
             }
         }
 
-		async function ragStreamingSearch(category) {
-			const query = category || document.getElementById('ragStreamingSearchQuery').value;
-			const ragStreamingSearchButton = document.getElementById('ragStreamingSearchButton');
-			const resultContainer = document.getElementById('ragStreamingSearchResult');
+        async function ragStreamingSearch(category) {
+            const query = category || document.getElementById('ragStreamingSearchQuery').value;
+            const searchButton = document.getElementById('ragStreamingSearchButton');
+            const resultContainer = document.getElementById('ragStreamingSearchResult');
             const jsonOutputContainer = document.getElementById('ragStreamingJsonOutput');
 
-			resultContainer.innerHTML = '';
-			jsonOutputContainer.textContent = '';
+            resetUI(resultContainer, jsonOutputContainer, searchButton);
+            lockSectionButtons('ragStreamingSearchSection');
 
-			lockSectionButtons('ragStreamingSearchSection');
-			ragStreamingSearchButton.classList.add('is-loading');
+            const startTime = Date.now();
+            let result = '';
 
-			const startTime = Date.now();
-			let jsonOutput = '';
-			let parsedResults = [];
-			let accumulatedData = '';
+            try {
+                const response = await fetch(`/api/products/search/rag/streaming?searchQuery=${encodeURIComponent(query)}`);
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
 
-			try {
-				const response = await fetch(`/api/products/search/rag/streaming?searchQuery=${encodeURIComponent(query)}`);
-				const reader = response.body.getReader();
-				const decoder = new TextDecoder("utf-8");
+                result = await processStream(reader, decoder, jsonOutputContainer, result);
 
-				while (true) {
-					const { done, value } = await reader.read();
-					if (done) break;
-					const chunk = decoder.decode(value, { stream: true });
-					accumulatedData += chunk;
-					jsonOutput += chunk;
-					jsonOutputContainer.textContent = jsonOutput;
+                displayResults(result, resultContainer, startTime);
+            } catch (error) {
+                console.error(error);
+                resultContainer.innerHTML = '<div class="notification is-danger"><strong>Error occurred while searching.</strong></div>';
+            } finally {
+                searchButton.classList.remove('is-loading');
+                unlockSectionButtons('ragStreamingSearchSection');
+            }
+        }
 
-					// Attempt to parse the JSON data
-					try {
-						// Check if the accumulated data ends with a valid JSON structure
-						const lastBraceIndex = accumulatedData.lastIndexOf('}');
-						const lastBracketIndex = accumulatedData.lastIndexOf(']');
-						const endIndex = Math.max(lastBraceIndex, lastBracketIndex);
+        function resetUI(resultContainer, jsonOutputContainer, searchButton) {
+            resultContainer.innerHTML = '';
+            jsonOutputContainer.textContent = '';
+            searchButton.classList.add('is-loading');
+        }
 
-						if (endIndex !== -1) {
-							const jsonString = accumulatedData.substring(0, endIndex + 1);
-							const parsedChunk = JSON.parse(jsonString);
-							parsedResults.push(parsedChunk);
-							accumulatedData = accumulatedData.substring(endIndex + 1); // Remove the parsed part
-						}
-					} catch (e) {
-						// Ignore parsing errors
-						console.error('Error parsing chunk:', e);
-					}
-				}
+        async function processStream(reader, decoder, jsonOutputContainer) {
+            let streamContent = '';
 
-				const endTime = Date.now();
-				const duration = (endTime - startTime) / 1000; // Convert to seconds
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
 
-				if (parsedResults.length === 0) {
-					resultContainer.innerHTML = '<div class="notification is-danger"><strong>No results found</strong></div>';
-				} else {
-					const products = parsedResults[0];
-					const transformedResult = {
-                        noResult: false,
-						minRelevance: 0.8,
-						relevantSourcesCount: products.length,
-						products: products.map(product => ({
-							id: product.Id,
-							name: product.Name,
-							description: product.Description,
-							price: product.Price,
-							priceCurrency: product.PriceCurrency,
-							supplyAbility: product.SupplyAbility,
-							minimumOrder: product.MinimumOrder
-						}))
-					};
+                const chunk = decoder.decode(value, { stream: true });
+                jsonOutputContainer.textContent += chunk;
+                streamContent += chunk;
+            }
 
-					resultContainer.innerHTML = `
-                        <div>
-                        <p><strong>Min Relevance:</strong> ${transformedResult.minRelevance}</p>
-                            <p><strong>Relevant Sources Count:</strong> ${transformedResult.relevantSourcesCount}</p>
-                            <p><strong>Request Duration:</strong> ${duration.toFixed(2)} seconds</p>
+            return streamContent;
+        }
+
+        function displayResults(result, resultContainer, startTime) {
+            const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+
+            if (result.length === 0) {
+                resultContainer.innerHTML = '<div class="notification is-danger"><strong>No results found</strong></div>';
+                return;
+            }
+
+            const products = JSON.parse(result);
+            const transformedResult = {
+                noResult: false,
+                minRelevance: 0.8,
+                relevantSourcesCount: products.length,
+                products: products.map(product => ({
+                    id: product.Id,
+                    name: product.Name,
+                    description: product.Description,
+                    price: product.Price,
+                    priceCurrency: product.PriceCurrency,
+                    supplyAbility: product.SupplyAbility,
+                    minimumOrder: product.MinimumOrder
+                }))
+            };
+
+            resultContainer.innerHTML = `
+                <div>
+                <p><strong>Min Relevance:</strong> ${transformedResult.minRelevance}</p>
+                <p><strong>Relevant Sources Count:</strong> ${transformedResult.relevantSourcesCount}</p>
+                <p><strong>Request Duration:</strong> ${duration} seconds</p>
+                </div>
+                <div class="products-container">
+                    ${transformedResult.products.map(product => `
+                        <div class="product-card">
+                            <h3>${product.name}</h3>
+                            <p class="description">${product.description}</p>
+                            <p class="price">${product.price} ${product.priceCurrency}</p>
+                            <p>Supply Ability: ${product.supplyAbility}</p>
+                            <p>Minimum Order: ${product.minimumOrder}</p>
                         </div>
-                        <div class="products-container">
-                            ${transformedResult.products.map(product => `
-                                <div class="product-card">
-                                    <h3>${product.name}</h3>
-                                    <p class="description">${product.description}</p>
-                                    <p class="price">${product.price} ${product.priceCurrency}</p>
-                                    <p>Supply Ability: ${product.supplyAbility}</p>
-                                    <p>Minimum Order: ${product.minimumOrder}</p>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-				}
-			} catch (error) {
-				console.error('Error occurred while searching:', error);
-				resultContainer.innerHTML = '<div class="notification is-danger"><strong>Error occurred while searching.</strong></div>';
-			} finally {
-				ragStreamingSearchButton.classList.remove('is-loading');
-				unlockSectionButtons('ragStreamingSearchSection');
-			}
-		}
+                    `).join('')}
+                </div>`;
+        }
 
     </script>
 </body>
+
 </html>
