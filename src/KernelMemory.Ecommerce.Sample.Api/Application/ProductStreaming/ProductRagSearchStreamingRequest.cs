@@ -1,8 +1,8 @@
-﻿using MediatR;
-using Microsoft.KernelMemory;
+﻿using System.Runtime.CompilerServices;
 using KernelMemory.Ecommerce.Sample.Api.Application.Configuration;
+using MediatR;
 using Microsoft.Extensions.Options;
-using System.Runtime.CompilerServices;
+using Microsoft.KernelMemory;
 
 namespace KernelMemory.Ecommerce.Sample.Api.Application.ProductStreaming;
 
