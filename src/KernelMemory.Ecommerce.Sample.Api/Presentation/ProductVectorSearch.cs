@@ -9,7 +9,7 @@ public class ProductVectorSearch : IEndpoint
     {
         app.MapGet("api/products/search/vector", async (string searchQuery, ISender sender) =>
         {
-            var result = await sender.Send(new ProductVectorSearchQuery(searchQuery));
+            var result =   await sender.Send(new ProductVectorSearchQuery(searchQuery));
 
             return Results.Ok(result.Value);
         });
