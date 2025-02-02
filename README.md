@@ -1,7 +1,6 @@
 ## Kernel Memory: E-commerce Sample
 
-
-![Build](https://github.com/demid-ns/kernel-memory-ecommerce-sample/actions/workflows/ci-build.yml/badge.svg)
+![Build](https://github.com/yuniko-software/kernel-memory-ecommerce-sample/actions/workflows/ci-build.yml/badge.svg)
 
 Support the project by giving it a star! Your feedback and contributions are greatly appreciated.
 
