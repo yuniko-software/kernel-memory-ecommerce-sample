@@ -241,27 +241,6 @@
         <div id="vectorSearchResult" class="mt-4"></div>
     </section>
 
-    <!-- RAG Search Section -->
-    <section class="box" id="ragSearchSection">
-        <h2 class="subtitle">RAG Search</h2>
-        <div class="field">
-            <div class="control">
-                <input class="input" type="text" id="ragSearchQuery" placeholder="Enter search query">
-            </div>
-        </div>
-        <button id="ragSearchButton" class="button is-unified" onclick="ragSearch()">Search</button>
-
-        <!-- RAG Search Category Buttons -->
-        <div class="category-buttons">
-            <button class="button is-info" onclick="ragSearch('Gaming Console')">Gaming Console</button>
-            <button class="button is-info" onclick="ragSearch('Smartphone')">Smartphone</button>
-            <button class="button is-info" onclick="ragSearch('Laptop')">Laptop</button>
-            <button class="button is-info" onclick="ragSearch('Headphones')">Headphones</button>
-        </div>
-
-        <div id="ragSearchResult" class="mt-4"></div>
-    </section>
-
     <!-- RAG Streaming Search Section -->
     <section class="box" id="ragStreamingSearchSection">
         <h2 class="subtitle">RAG Streaming Search</h2>
@@ -283,6 +262,27 @@
         <div id="ragStreamingJsonOutput" class="json-output"></div>
         <div id="ragStreamingSearchResult" class="mt-4"></div>
 
+    </section>
+
+    <!-- RAG Search Section -->
+    <section class="box" id="ragSearchSection">
+        <h2 class="subtitle">RAG Search</h2>
+        <div class="field">
+            <div class="control">
+                <input class="input" type="text" id="ragSearchQuery" placeholder="Enter search query">
+            </div>
+        </div>
+        <button id="ragSearchButton" class="button is-unified" onclick="ragSearch()">Search</button>
+
+        <!-- RAG Search Category Buttons -->
+        <div class="category-buttons">
+            <button class="button is-info" onclick="ragSearch('Gaming Console')">Gaming Console</button>
+            <button class="button is-info" onclick="ragSearch('Smartphone')">Smartphone</button>
+            <button class="button is-info" onclick="ragSearch('Laptop')">Laptop</button>
+            <button class="button is-info" onclick="ragSearch('Headphones')">Headphones</button>
+        </div>
+
+        <div id="ragSearchResult" class="mt-4"></div>
     </section>
 
     <script>
