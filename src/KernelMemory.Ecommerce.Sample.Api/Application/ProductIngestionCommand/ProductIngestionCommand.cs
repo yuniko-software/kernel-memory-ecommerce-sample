@@ -20,16 +20,27 @@ public sealed class ProductIngestionCommandHandler(
 
         // Note: The GenerateEmbeddingsParallelHandler could potentially be used here as an alternative.
         // However, it is currently experimental and may not yet be stable for production use
-        var importTasks = readingResult.Value.Select(async product =>
-        {
-            return await memory.ImportTextAsync(
-                JsonSerializer.Serialize(product),
-                documentId: product.Id.ToString(),
-                cancellationToken: cancellationToken);
-        });
 
+        Task<string> __CreateImportTextTask(Product product) => 
+            memory.ImportTextAsync(
+               JsonSerializer.Serialize(product),
+               documentId: product.Id.ToString(),
+               cancellationToken: cancellationToken);
+
+        // Need to process one task first to init several things inside KernelMemory.
+        // Of the tasks is creating a table in database if it does not exist.
+        Task<string> firstImportTask = readingResult.Value.Take(1)
+            .Select(__CreateImportTextTask).Single();
+
+        string[] firstDocumentId = await Task.WhenAll(firstImportTask);
+
+        var importTasks = readingResult.Value.Skip(1).Select(__CreateImportTextTask);
         var documentIds = await Task.WhenAll(importTasks);
 
-        return documentIds;
+        var result = new List<string>();
+        result.AddRange(firstDocumentId);
+        result.AddRange(documentIds);
+
+        return result;
     }
 }

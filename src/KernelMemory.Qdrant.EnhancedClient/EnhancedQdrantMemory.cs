@@ -1,5 +1,9 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections;
+using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using Google.Protobuf.Collections;
+using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
@@ -12,7 +16,7 @@ using static Qdrant.Client.Grpc.Conditions;
 
 namespace KernelMemory.Qdrant.EnhancedClient;
 
-public sealed class EnhancedQdrantMemory : IMemoryDb, IDisposable
+public sealed class EnhancedQdrantMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposable
 {
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly QdrantClient _client;
@@ -27,21 +31,36 @@ public sealed class EnhancedQdrantMemory : IMemoryDb, IDisposable
         _log = log;
     }
 
-    public Task CreateIndexAsync(string index, int vectorSize, CancellationToken cancellationToken = default)
+    public async Task CreateIndexAsync(string index, int vectorSize, CancellationToken cancellationToken = default)
     {
         index = NormalizeIndexName(index);
 
         ulong vectorSizeUlong = ConvertIntToUlongStrict(vectorSize);
 
-        return _client.CreateCollectionAsync(
-            collectionName: index,
-            vectorsConfig: new VectorParams
+        try
+        {
+            await _client.CreateCollectionAsync(
+                collectionName: index,
+                vectorsConfig: new VectorParams
+                {
+                    Size = vectorSizeUlong,
+                    Distance = Distance.Cosine
+                },
+                sparseVectorsConfig: new SparseVectorConfig(),
+                cancellationToken: cancellationToken);
+
+        }
+        catch (RpcException ex)
+        {
+            // Do not throw if collection already exists, it is expected.
+            if (ex.StatusCode == Grpc.Core.StatusCode.AlreadyExists)
             {
-                Size = vectorSizeUlong,
-                Distance = Distance.Cosine
-            },
-            sparseVectorsConfig: new SparseVectorConfig(),
-            cancellationToken: cancellationToken);
+                _log.LogDebug("Collection {Index} already exists", index);
+                return;
+            }
+
+            throw;
+        }
     }
 
     public async Task DeleteAsync(
@@ -148,9 +167,103 @@ public sealed class EnhancedQdrantMemory : IMemoryDb, IDisposable
         throw new NotImplementedException();
     }
 
-    public Task<string> UpsertAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
+    public async Task<string> UpsertAsync(
+        string index, 
+        MemoryRecord record, 
+        CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var result = UpsertBatchAsync(index, [record], cancellationToken);
+        var id = await result.SingleAsync(cancellationToken).ConfigureAwait(false);
+        return id;
+    }
+
+    public async IAsyncEnumerable<string> UpsertBatchAsync(
+        string index, 
+        IEnumerable<MemoryRecord> records, 
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        index = NormalizeIndexName(index);
+
+        // Call ToList to avoid multiple enumerations
+        // (CA1851: Possible multiple enumerations of 'IEnumerable' collection.
+        // Consider using an implementation that avoids multiple enumerations).
+        var localRecords = records.ToList();
+
+        var qdrantPoints = new List<PointStruct>();
+        foreach (var record in localRecords)
+        {
+            PointStruct qdrantPoint;
+            Guid pointId;
+
+            if (string.IsNullOrEmpty(record.Id))
+            {
+                pointId = Guid.NewGuid();
+                record.Id = pointId.ToString("N");
+                
+                _log.LogTrace(
+                    "Generate new Qdrant point with record ID {RecordId}",
+                    record.Id);
+            }
+            else
+            {
+                ScrollResponse scrollResponse = await _client
+                    .ScrollAsync(
+                        collectionName: index,
+                        filter: MatchText("id", record.Id),
+                        limit: 1,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+                RetrievedPoint existingPoint = scrollResponse.Result.FirstOrDefault();
+
+                if (existingPoint == null)
+                {
+                    pointId = Guid.NewGuid();
+                    _log.LogTrace(
+                        "No record with ID {RecordId} found, generated a new point ID {PointId}", 
+                        record.Id, 
+                        pointId);
+                }
+                else
+                {
+                    pointId = new Guid(existingPoint.Id.Uuid);
+                    _log.LogTrace("Point ID {PointId} found, updating...", pointId);
+                }
+            }
+            
+            // TODO [denbell] move code of building PointStruct to a separate method
+            MapField<string, Value> payload = BuildPayload(record);
+
+            Vector vector = new Vector()
+            {
+                // Indices = new SparseIndices(), // TODO [denbell]
+                VectorsCount = 1, // TODO [denbell]
+            };
+            vector.Data.AddRange(record.Vector.Data.ToArray());
+
+            qdrantPoint = new PointStruct
+            {
+                Id = pointId,
+                Vectors = new Vectors
+                {
+                    Vector = vector,
+                },
+            };
+            qdrantPoint.Payload.Add(payload);
+            
+            qdrantPoints.Add(qdrantPoint);
+        }
+
+        UpdateResult updateResult = await _client
+            .UpsertAsync(index, qdrantPoints, wait: true, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        _log.LogTrace("Result of upsert is {UpdateResultStatus}", updateResult.Status);
+
+        foreach (var record in localRecords)
+        {
+            yield return record.Id;
+        }
     }
 
     public void Dispose()
@@ -163,6 +276,57 @@ public sealed class EnhancedQdrantMemory : IMemoryDb, IDisposable
     // Note: "_" is allowed in Qdrant, but we normalize it to "-" for consistency with other DBs
     private static readonly Regex s_replaceIndexNameCharsRegex = new(@"[\s|\\|/|.|_|:]", RegexOptions.Compiled);
     private const string ValidSeparator = "-";
+
+    private static MapField<string, Value> BuildPayload(MemoryRecord record)
+    {
+        var payload = new MapField<string, Value>();
+        foreach (var kv in record.Payload)
+        {
+            Value qValue = null;
+            if (kv.Value is null)
+            {
+                qValue = null;
+            }
+            else if (kv.Value is string str)
+            {
+                qValue = str;
+            }
+            else if (kv.Value is int _int)
+            {
+                qValue = _int;
+            }
+            else if (kv.Value is long _long)
+            {
+                qValue = _long;
+            }
+            else if (kv.Value is bool _bool)
+            {
+                qValue = _bool;
+            }
+#pragma warning disable IDE0045 // Convert to conditional expression
+            else if (kv.Value is double _double)
+            {
+                qValue = _double;
+            }
+            else if (kv.Value is string[] strArr)
+            {
+                qValue = strArr;
+            }
+            else
+            {
+                throw new NotImplementedException(
+                    $"There is no handling for payload value of type {kv.Value.GetType().FullName}");
+            }
+#pragma warning restore IDE0045 // Convert to conditional expression
+
+            if (qValue is not null)
+            {
+                payload.Add(kv.Key, qValue);
+            }
+        }
+
+        return payload;
+    }
 
     private static string NormalizeIndexName(string index)
     {
