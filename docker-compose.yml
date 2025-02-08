@@ -39,7 +39,7 @@ services:
       - 6334
       - 6335
     volumes:
-      - qdrant-data:/var/lib/qdrant/storage
+      - qdrant-data:/qdrant/storage
 
   
   kernelmemory.ecommerce.sample.seq:
