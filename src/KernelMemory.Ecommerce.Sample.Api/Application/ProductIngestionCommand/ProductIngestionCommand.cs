@@ -21,7 +21,7 @@ public sealed class ProductIngestionCommandHandler(
         // Note: The GenerateEmbeddingsParallelHandler could potentially be used here as an alternative.
         // However, it is currently experimental and may not yet be stable for production use
 
-        Task<string> __CreateImportTextTask(Product product) => 
+        Task<string> __CreateImportTextTask(Product product) =>
             memory.ImportTextAsync(
                JsonSerializer.Serialize(product),
                documentId: product.Id.ToString(),

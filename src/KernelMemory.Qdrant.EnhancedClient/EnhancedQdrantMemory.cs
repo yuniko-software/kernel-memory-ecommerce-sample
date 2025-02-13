@@ -46,7 +46,7 @@ public sealed class EnhancedQdrantMemory : IMemoryDb, IMemoryDbUpsertBatch, IDis
                     Size = vectorSizeUlong,
                     Distance = Distance.Cosine
                 },
-                sparseVectorsConfig: new SparseVectorConfig(),
+                // sparseVectorsConfig: new SparseVectorConfig(), // TODO uncomment to enable sparse vectors
                 cancellationToken: cancellationToken);
 
         }
@@ -106,17 +106,61 @@ public sealed class EnhancedQdrantMemory : IMemoryDb, IMemoryDbUpsertBatch, IDis
 
     public Task DeleteIndexAsync(string index, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return _client.DeleteCollectionAsync(index, cancellationToken: cancellationToken);
     }
 
-    public Task<IEnumerable<string>> GetIndexesAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<string>> GetIndexesAsync(CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        IReadOnlyList<string> collectionNames = await _client.ListCollectionsAsync(cancellationToken);
+        return collectionNames;
     }
 
-    public IAsyncEnumerable<MemoryRecord> GetListAsync(string index, ICollection<MemoryFilter>? filters = null, int limit = 1, bool withEmbeddings = false, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<MemoryRecord> GetListAsync(
+        string index,
+        ICollection<MemoryFilter>? filters = null,
+        int limit = 1,
+        bool withEmbeddings = false,
+        CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        index = NormalizeIndexName(index);
+        if (limit <= 0)
+        { limit = int.MaxValue; }
+
+        // Remove empty filters
+        filters = filters?.Where(f => !f.IsEmpty()).ToList();
+
+        var requiredTags = new List<IEnumerable<string>>();
+        if (filters is { Count: > 0 })
+        {
+            requiredTags.AddRange(filters.Select(filter => filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsChar}{x.Value}")));
+        }
+
+        List<RetrievedPoint> results;
+        try
+        {
+            var scrollResponse = await _client.ScrollAsync(
+                collectionName: index,
+                filter: new Filter
+                {
+                    // TODO
+                },
+                offset: 0,
+                limit: (uint)limit,
+                vectorsSelector: new WithVectorsSelector { Enable = withEmbeddings },
+                payloadSelector: new WithPayloadSelector { Enable = true },
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (IndexNotFoundException e)
+        {
+            _log.LogWarning(e, "Index not found");
+            // Nothing to return
+            yield break;
+        }
+
+        foreach (var point in results)
+        {
+            yield return point.ToMemoryRecord();
+        }
     }
 
     public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
@@ -160,7 +204,7 @@ public sealed class EnhancedQdrantMemory : IMemoryDb, IMemoryDbUpsertBatch, IDis
             },
             query: Fusion.Rrf,
             cancellationToken: cancellationToken);
-        
+
         // TODO this line is here just to stub the compilation error
         yield break;
 
@@ -168,8 +212,8 @@ public sealed class EnhancedQdrantMemory : IMemoryDb, IMemoryDbUpsertBatch, IDis
     }
 
     public async Task<string> UpsertAsync(
-        string index, 
-        MemoryRecord record, 
+        string index,
+        MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
         var result = UpsertBatchAsync(index, [record], cancellationToken);
@@ -178,8 +222,8 @@ public sealed class EnhancedQdrantMemory : IMemoryDb, IMemoryDbUpsertBatch, IDis
     }
 
     public async IAsyncEnumerable<string> UpsertBatchAsync(
-        string index, 
-        IEnumerable<MemoryRecord> records, 
+        string index,
+        IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         index = NormalizeIndexName(index);
@@ -199,7 +243,7 @@ public sealed class EnhancedQdrantMemory : IMemoryDb, IMemoryDbUpsertBatch, IDis
             {
                 pointId = Guid.NewGuid();
                 record.Id = pointId.ToString("N");
-                
+
                 _log.LogTrace(
                     "Generate new Qdrant point with record ID {RecordId}",
                     record.Id);
@@ -220,8 +264,8 @@ public sealed class EnhancedQdrantMemory : IMemoryDb, IMemoryDbUpsertBatch, IDis
                 {
                     pointId = Guid.NewGuid();
                     _log.LogTrace(
-                        "No record with ID {RecordId} found, generated a new point ID {PointId}", 
-                        record.Id, 
+                        "No record with ID {RecordId} found, generated a new point ID {PointId}",
+                        record.Id,
                         pointId);
                 }
                 else
@@ -230,14 +274,14 @@ public sealed class EnhancedQdrantMemory : IMemoryDb, IMemoryDbUpsertBatch, IDis
                     _log.LogTrace("Point ID {PointId} found, updating...", pointId);
                 }
             }
-            
+
             // TODO [denbell] move code of building PointStruct to a separate method
             MapField<string, Value> payload = BuildPayload(record);
 
             Vector vector = new Vector()
             {
                 // Indices = new SparseIndices(), // TODO [denbell]
-                VectorsCount = 1, // TODO [denbell]
+                //VectorsCount = (uint)1, // TODO [denbell]
             };
             vector.Data.AddRange(record.Vector.Data.ToArray());
 
@@ -250,7 +294,7 @@ public sealed class EnhancedQdrantMemory : IMemoryDb, IMemoryDbUpsertBatch, IDis
                 },
             };
             qdrantPoint.Payload.Add(payload);
-            
+
             qdrantPoints.Add(qdrantPoint);
         }
 
