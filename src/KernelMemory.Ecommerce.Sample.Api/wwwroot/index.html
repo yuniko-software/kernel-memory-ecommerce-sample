@@ -529,7 +529,7 @@
             const products = JSON.parse(result);
             const transformedResult = {
                 noResult: false,
-                minRelevance: 0.8,
+                minRelevance: products.MinRelevance,
                 relevantSourcesCount: products.length,
                 products: products.map(product => ({
                     id: product.Id,
