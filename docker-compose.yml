@@ -6,7 +6,6 @@ services:
       dockerfile: src/KernelMemory.Ecommerce.Sample.Api/Dockerfile
     ports:
       - 9000:8080
-      - 9001:8081
     depends_on:
       kernelmemory.ecommerce.sample.database:
         condition: service_healthy
@@ -40,8 +39,20 @@ services:
       - 6334
       - 6335
     volumes:
-      - qdrant-data:/var/lib/qdrant/storage
+      - qdrant-data:/qdrant/storage
+
+  
+  kernelmemory.ecommerce.sample.seq:
+    image: datalust/seq
+    ports: 
+      - 5341:80
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINPASSWORD=password
+    volumes:
+      - seq-data:/data
 
 volumes:
   db-data:
   qdrant-data:
+  seq-data:
